@@ -20,9 +20,7 @@
     function tts() {
         let text = document.getElementById('text').value;
         playBtn.innerText = '准备中';
-        if (audio !== null) {
-            document.body.removeChild(audio);
-        }
+
         audio = null;
 
         // 调用语音合成接口
