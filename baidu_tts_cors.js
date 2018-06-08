@@ -16,68 +16,86 @@ function btts(param, options) {
     var url = 'http://tsn.baidu.com/text2audio';
     var opt = options || {};
     var p = param || {};
-    // 默认超时时间10秒
-    var DEFAULT_TIMEOUT = 60000;
-    var timeout = opt.timeout || DEFAULT_TIMEOUT;
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', url);
-
-    var data = {};
-    for (var p in param) {
-        data[p] = param[p]
-    }
-
-    data.cuid = data.cuid || data.tok;
-    data.ctp = 1;
-    data.lan = data.lan || 'zh';
-
-    var fd = [];
-    for(var k in data) {
-        fd.push(k + '=' + encodeURIComponent(data[k]));
-    }
-    var frd = new FileReader();
-    xhr.responseType = 'blob';
-    xhr.send(fd.join('&'));
-
-    var timer = setTimeout(function(){
-        xhr.abort();
-        isFunction(opt.onTimeout) && opt.onTimeout();
-    }, timeout);
-
+    // 如果浏览器支持，可以设置autoplay，但是不能兼容所有浏览器
     var audio = document.createElement('audio');
     if (opt.autoplay) {
         audio.setAttribute('autoplay', 'autoplay');
     }
 
+    // 隐藏控制栏
     if (!opt.hidden) {
         audio.setAttribute('controls', 'controls');
     } else {
         audio.style.display = 'none';
     }
 
+    // 设置音量
     if (typeof opt.volume !== 'undefined') {
         audio.volume = opt.volume;
     }
 
+    // 调用onInit回调
     isFunction(opt.onInit) && opt.onInit(audio);
+
+    // 默认超时时间60秒
+    var DEFAULT_TIMEOUT = 60000;
+    var timeout = opt.timeout || DEFAULT_TIMEOUT;
+
+    // 创建XMLHttpRequest对象
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+
+    // 创建form参数
+    var data = {};
+    for (var p in param) {
+        data[p] = param[p]
+    }
+
+    // 赋值预定义参数
+    data.cuid = data.cuid || data.tok;
+    data.ctp = 1;
+    data.lan = data.lan || 'zh';
+
+    // 序列化参数列表
+    var fd = [];
+    for(var k in data) {
+        fd.push(k + '=' + encodeURIComponent(data[k]));
+    }
+
+    // 用来处理blob数据
+    var frd = new FileReader();
+    xhr.responseType = 'blob';
+    xhr.send(fd.join('&'));
+
+    // 用timeout可以更兼容的处理兼容超时
+    var timer = setTimeout(function(){
+        xhr.abort();
+        isFunction(opt.onTimeout) && opt.onTimeout();
+    }, timeout);
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             clearTimeout(timer);
-            if (xhr.status == 200 ) {
+            if (xhr.status == 200) {
                 if (xhr.response.type === 'audio/mp3') {
+
+                    // 在body元素下apppend音频控件
                     document.body.append(audio);
 
                     audio.setAttribute('src', URL.createObjectURL(xhr.response));
 
+                    // autoDestory设置则播放完后移除audio的dom对象
                     if (opt.autoDestory) {
                         audio.onended = function() {
                             document.body.removeChild(audio);
                         }
                     }
+
                     isFunction(opt.onSuccess) && opt.onSuccess(audio);
                 }
+
+                // 用来处理错误
                 if (xhr.response.type === 'application/json') {
                     frd.onload = function(){
                         var text = frd.result;

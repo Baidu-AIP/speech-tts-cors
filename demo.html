@@ -21,13 +21,11 @@
         let text = document.getElementById('text').value;
         playBtn.innerText = '准备中';
 
-        audio = null;
-
         // 调用语音合成接口
         // 参数含义请参考 https://ai.baidu.com/docs#/TTS-API/41ac79a6
         audio = btts({
             tex: text,
-            tok: '24.7684c3f76729b5e88d550f089482e744.2592000.1523784259.282335-9496006',
+            tok: '24.c31eedd807bdd86586bd165e1e1717c2.2592000.1530954866.282335-9496006',
             spd: 5,
             pit: 5,
             vol: 15,
