@@ -81,7 +81,7 @@ function btts(param, options) {
                 if (xhr.response.type === 'audio/mp3') {
 
                     // 在body元素下apppend音频控件
-                    document.body.append(audio);
+                    document.body.appendChild(audio);
 
                     audio.setAttribute('src', URL.createObjectURL(xhr.response));
 
